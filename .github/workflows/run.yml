@@ -1,1 +1,36 @@
+name: arXiv Weekly Report (QKD / Chip / Coherent)
+
+on:
+  workflow_dispatch:        # 允许在 Actions 页面手动运行
+  schedule:
+    - cron: '0 1 * * 1'     # 每周一 01:00 UTC（北京时间 09:00，东京时间 10:00）
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install packages
+        run: pip install -r requirements.txt
+
+      - name: Generate weekly report
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+        run: python arxiv_tracker.py
+
+      - name: Commit and push the report
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Add arXiv weekly report"
+          file_pattern: 'reports/*.md'
 
